@@ -24,6 +24,7 @@ const (
 	labelKeyJobResult               = "job_result"
 	labelKeyRunnerID                = "runner_id"
 	labelKeyRunnerName              = "runner_name"
+	labelKeyListenerType            = "listener_type"
 )
 
 const githubScaleSetSubsystem = "gha"
@@ -36,6 +37,7 @@ var (
 		labelKeyOrganization,
 		labelKeyEnterprise,
 		labelKeyRunnerScaleSetNamespace,
+		labelKeyListenerType,
 	}
 
 	jobLabels = []string{
@@ -45,6 +47,7 @@ var (
 		labelKeyJobName,
 		labelKeyJobWorkflowRef,
 		labelKeyEventName,
+		labelKeyListenerType,
 	}
 
 	completedJobsTotalLabels   = append(jobLabels, labelKeyJobResult, labelKeyRunnerID, labelKeyRunnerName)
@@ -219,6 +222,7 @@ type baseLabels struct {
 	enterprise        string
 	organization      string
 	repository        string
+	listenerType      string
 }
 
 func (b *baseLabels) jobLabels(jobBase *actions.JobMessageBase) prometheus.Labels {
@@ -229,6 +233,7 @@ func (b *baseLabels) jobLabels(jobBase *actions.JobMessageBase) prometheus.Label
 		labelKeyJobName:        jobBase.JobDisplayName,
 		labelKeyJobWorkflowRef: jobBase.JobWorkflowRef,
 		labelKeyEventName:      jobBase.EventName,
+		labelKeyListenerType:   b.listenerType,
 	}
 }
 
@@ -239,6 +244,7 @@ func (b *baseLabels) scaleSetLabels() prometheus.Labels {
 		labelKeyEnterprise:              b.enterprise,
 		labelKeyOrganization:            b.organization,
 		labelKeyRepository:              b.repository,
+		labelKeyListenerType:            b.listenerType,
 	}
 }
 
@@ -291,6 +297,7 @@ type ExporterConfig struct {
 	Enterprise        string
 	Organization      string
 	Repository        string
+	ListenerType      string
 	ServerAddr        string
 	ServerEndpoint    string
 	Logger            logr.Logger
@@ -327,6 +334,7 @@ func NewExporter(config ExporterConfig) ServerPublisher {
 			enterprise:        config.Enterprise,
 			organization:      config.Organization,
 			repository:        config.Repository,
+			listenerType:      config.ListenerType,
 		},
 		srv: &http.Server{
 			Addr:    config.ServerAddr,

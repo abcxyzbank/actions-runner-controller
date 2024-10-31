@@ -32,6 +32,7 @@ type Config struct {
 	LogFormat                   string `json:"logFormat"`
 	MetricsAddr                 string `json:"metricsAddr"`
 	MetricsEndpoint             string `json:"metricsEndpoint"`
+	ListenerType                string `json:"listenerType"`
 }
 
 func Read(path string) (Config, error) {
@@ -79,6 +80,10 @@ func (c *Config) validate() error {
 
 	if hasToken && hasPrivateKeyConfig {
 		return fmt.Errorf("only one GitHub auth method supported at a time. Have both PAT and App auth: token length: '%d', appId: '%d', installationId: '%d', private key length: '%d", len(c.Token), c.AppID, c.AppInstallationID, len(c.AppPrivateKey))
+	}
+
+	if len(c.ListenerType) == 0 {
+		return fmt.Errorf("ListenerType is not provided")
 	}
 
 	return nil

@@ -82,4 +82,29 @@ func TestApp_Run(t *testing.T) {
 		err := app.Run(ctx)
 		assert.Error(t, err)
 	})
+
+	t.Run("ListenerSpecificMetrics", func(t *testing.T) {
+		listener := appmocks.NewListener(t)
+		worker := appmocks.NewWorker(t)
+		metrics := metricsMocks.NewServerPublisher(t)
+		ctx := context.Background()
+
+		listener.On("Listen", mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+			ctx := args.Get(0).(context.Context)
+			go func() {
+				<-ctx.Done()
+			}()
+		}).Return(nil).Once()
+
+		metrics.On("ListenAndServe", mock.Anything).Return(nil).Once()
+
+		app := &App{
+			listener: listener,
+			worker:   worker,
+			metrics:  metrics,
+		}
+
+		err := app.Run(ctx)
+		assert.NoError(t, err)
+	})
 }

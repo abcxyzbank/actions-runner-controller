@@ -13,6 +13,7 @@ var labels = []string{
 	"repository",
 	"organization",
 	"enterprise",
+	"listener_type",
 }
 
 type CommonLabels struct {
@@ -21,6 +22,7 @@ type CommonLabels struct {
 	Repository   string
 	Organization string
 	Enterprise   string
+	ListenerType string
 }
 
 func (l *CommonLabels) labels() prometheus.Labels {
@@ -30,6 +32,7 @@ func (l *CommonLabels) labels() prometheus.Labels {
 		"repository":   l.Repository,
 		"organization": l.Organization,
 		"enterprise":   l.Enterprise,
+		"listener_type": l.ListenerType,
 	}
 }
 
@@ -66,6 +69,62 @@ var (
 		},
 		labels,
 	)
+	runningJobs = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "running_jobs",
+			Help:      "Number of running jobs.",
+		},
+		labels,
+	)
+	queuedJobs = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "queued_jobs",
+			Help:      "Number of queued jobs.",
+		},
+		labels,
+	)
+	idleRunners = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "idle_runners",
+			Help:      "Number of idle runners.",
+		},
+		labels,
+	)
+	failedJobs = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "failed_jobs",
+			Help:      "Number of failed jobs.",
+		},
+		labels,
+	)
+	averageJobDuration = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "average_job_duration",
+			Help:      "Average job duration.",
+		},
+		labels,
+	)
+	resourceUtilizationCPU = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "resource_utilization_cpu",
+			Help:      "Resource utilization (CPU).",
+		},
+		labels,
+	)
+	resourceUtilizationMemory = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Subsystem: githubScaleSetControllerSubsystem,
+			Name:      "resource_utilization_memory",
+			Help:      "Resource utilization (Memory).",
+		},
+		labels,
+	)
 )
 
 func RegisterMetrics() {
@@ -74,6 +133,13 @@ func RegisterMetrics() {
 		runningEphemeralRunners,
 		failedEphemeralRunners,
 		runningListeners,
+		runningJobs,
+		queuedJobs,
+		idleRunners,
+		failedJobs,
+		averageJobDuration,
+		resourceUtilizationCPU,
+		resourceUtilizationMemory,
 	)
 }
 
@@ -89,4 +155,32 @@ func AddRunningListener(commonLabels CommonLabels) {
 
 func SubRunningListener(commonLabels CommonLabels) {
 	runningListeners.With(commonLabels.labels()).Set(0)
+}
+
+func SetRunningJobs(commonLabels CommonLabels, count int) {
+	runningJobs.With(commonLabels.labels()).Set(float64(count))
+}
+
+func SetQueuedJobs(commonLabels CommonLabels, count int) {
+	queuedJobs.With(commonLabels.labels()).Set(float64(count))
+}
+
+func SetIdleRunners(commonLabels CommonLabels, count int) {
+	idleRunners.With(commonLabels.labels()).Set(float64(count))
+}
+
+func SetFailedJobs(commonLabels CommonLabels, count int) {
+	failedJobs.With(commonLabels.labels()).Set(float64(count))
+}
+
+func SetAverageJobDuration(commonLabels CommonLabels, duration float64) {
+	averageJobDuration.With(commonLabels.labels()).Set(duration)
+}
+
+func SetResourceUtilizationCPU(commonLabels CommonLabels, utilization float64) {
+	resourceUtilizationCPU.With(commonLabels.labels()).Set(utilization)
+}
+
+func SetResourceUtilizationMemory(commonLabels CommonLabels, utilization float64) {
+	resourceUtilizationMemory.With(commonLabels.labels()).Set(utilization)
 }
